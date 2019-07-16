@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const request = require('request');
-const { unlinkSync, writeFile } = require('fs');
+const { unlinkSync, writeFile, existsSync, mkdirSync } = require('fs');
 const path = require('path');
 const uuid = require('uuid/v4');
 const imagesPath = path.join(__dirname, 'images');
@@ -24,6 +24,17 @@ const silenDelete = async (file) => {
     return Promise.resolve();
   }
 }
+
+const createImagesFolder = () => new Promise((resolve, reject) => {
+  try{
+    if(!existsSync(imagesPath)){
+      mkdirSync(imagesPath);
+    }
+    resolve();
+  }catch(error){
+    reject(error);
+  }
+})
 
 // Upload app to directory
 const updloadImage = async (name, bufferData) => {
@@ -100,13 +111,14 @@ router.post('/', async (req, res) => {
   const face1Buffer = new Buffer(face1, 'base64');
   const face2Buffer = new Buffer(face2, 'base64');
 
-  // save images locally
-  await updloadImage(path.join(imagesPath, face1Name), face1Buffer);
-  await updloadImage(path.join(imagesPath, face2Name), face2Buffer);
-
   try {
-    console.log(process.env.APP_URL + '/images/' + face1Name);
-    console.log(process.env.APP_URL + '/images/' + face2Name);
+    // create images folder
+    await createImagesFolder();
+
+    // save images locally
+    await updloadImage(path.join(imagesPath, face1Name), face1Buffer);
+    await updloadImage(path.join(imagesPath, face2Name), face2Buffer);
+
     // detect image one
     face1Data = await detectFace(process.env.APP_URL + '/images/' + face1Name);
     // throw error if face one was not detected
@@ -122,8 +134,8 @@ router.post('/', async (req, res) => {
     if(!faceVerification) throw new Error('Unable to verify faces at the moment.');
 
     // delete images
-    // await silenDelete(path.join(imagesPath, face1Name));
-    // await silenDelete(path.join(imagesPath, face2Name));
+    await silenDelete(path.join(imagesPath, face1Name));
+    await silenDelete(path.join(imagesPath, face2Name));
 
     // return a response
     return res.status(200).json({
@@ -135,8 +147,8 @@ router.post('/', async (req, res) => {
     // get error message
     let errorMessage = error.message;
     // delete files
-    // await silenDelete(path.join(imagesPath, face1Name));
-    // await silenDelete(path.join(imagesPath, face2Name));
+    await silenDelete(path.join(imagesPath, face1Name));
+    await silenDelete(path.join(imagesPath, face2Name));
     // // more than one face detected
     if(/multiple faces/i.test(errorMessage)){
       errorMessage = face1Data 

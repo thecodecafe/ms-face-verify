@@ -10,7 +10,7 @@ const app = express();
 // initialize body parser
 app.use(bodyParser.json({limit: '50mb'}));
 
-app.use('/images', express.static(path.join('./', 'images')))
+app.use('/images', express.static(path.join(__dirname, 'images')))
 
 // setup routes
 app.use('/face/verify', require("./faceverify"));
