@@ -105,6 +105,8 @@ router.post('/', async (req, res) => {
   await updloadImage(path.join(imagesPath, face2Name), face2Buffer);
 
   try {
+    console.log(process.env.APP_URL + '/images/' + face1Name);
+    console.log(process.env.APP_URL + '/images/' + face2Name);
     // detect image one
     face1Data = await detectFace(process.env.APP_URL + '/images/' + face1Name);
     // throw error if face one was not detected
@@ -120,8 +122,8 @@ router.post('/', async (req, res) => {
     if(!faceVerification) throw new Error('Unable to verify faces at the moment.');
 
     // delete images
-    await silenDelete(path.join(imagesPath, face1Name));
-    await silenDelete(path.join(imagesPath, face2Name));
+    // await silenDelete(path.join(imagesPath, face1Name));
+    // await silenDelete(path.join(imagesPath, face2Name));
 
     // return a response
     return res.status(200).json({
@@ -133,9 +135,9 @@ router.post('/', async (req, res) => {
     // get error message
     let errorMessage = error.message;
     // delete files
-    await silenDelete(path.join(imagesPath, face1Name));
-    await silenDelete(path.join(imagesPath, face2Name));
-    // more than one face detected
+    // await silenDelete(path.join(imagesPath, face1Name));
+    // await silenDelete(path.join(imagesPath, face2Name));
+    // // more than one face detected
     if(/multiple faces/i.test(errorMessage)){
       errorMessage = face1Data 
         ? 'Multiple faces detected in image two.'
