@@ -117,9 +117,7 @@ router.post('/', async (req, res) => {
 
     // save images locally
     await updloadImage(path.join(imagesPath, face1Name), face1Buffer);
-    console.log(process.env.APP_URL + '/images/' + face1Name);
     await updloadImage(path.join(imagesPath, face2Name), face2Buffer);
-    console.log(process.env.APP_URL + '/images/' + face2Name);
 
     // detect image one
     face1Data = await detectFace(process.env.APP_URL + '/images/' + face1Name);
@@ -149,9 +147,9 @@ router.post('/', async (req, res) => {
     // get error message
     let errorMessage = error.message;
     // delete files
-    // await silenDelete(path.join(imagesPath, face1Name));
-    // await silenDelete(path.join(imagesPath, face2Name));
-    // // more than one face detected
+    await silenDelete(path.join(imagesPath, face1Name));
+    await silenDelete(path.join(imagesPath, face2Name));
+    // more than one face detected
     if(/multiple faces/i.test(errorMessage)){
       errorMessage = face1Data 
         ? 'Multiple faces detected in image two.'
