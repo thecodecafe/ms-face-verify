@@ -13,7 +13,8 @@ app.use(bodyParser.json({limit: '50mb'}));
 app.use('/images', express.static(path.join(__dirname, 'images')))
 
 // setup routes
-app.use('/face/verify', require("./faceverify"));
+app.use('/face/verify', require("./routes/verify.face"));
+app.use('/face/detect', require("./routes/detect.face"));
 
 // 404 page not found errors
 app.use((req, res) => {
