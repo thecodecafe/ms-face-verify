@@ -54,7 +54,7 @@ class FaceId {
         // return with body error if any
         if(body.error) return reject(body.error);
         // return found face
-        return resolve(body[0]);
+        return resolve(body);
       });
     })
   }
