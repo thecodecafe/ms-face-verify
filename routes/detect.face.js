@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const uuid = require('uuid/v4');
-const { 
+const {
   FaceId,
   SilentDelete,
   CreateImageDirectory,
@@ -13,7 +13,7 @@ const {
 // handle request for face verifications
 router.post('/', async (req, res) => {
   // get images from the request body
-  const {image} = req.body;
+  const { image, maxFaces } = req.body;
 
   // create image names
   const imageName = uuid() + '.jpg';
@@ -29,27 +29,30 @@ router.post('/', async (req, res) => {
     await SaveImage(path.join(Directories.imagesPath, imageName), imageBuffer);
 
     // detect face on image
-    const detection = await FaceId.detect(process.env.APP_URL + '/images/' + imageName);
+    const detected = await FaceId.detect(
+      process.env.APP_URL + '/images/' + imageName,
+      maxFaces || 1
+    );
 
     // throw error if face was not detected
-    if(!detection) throw new Error('Failed to detect face on image.');
+    if (!detected) throw new Error('Failed to detect face on image.');
 
     // delete images
     await SilentDelete(path.join(Directories.imagesPath, imageName));
 
     // return a response
-    return res.status(200).json({success: true, data: detection});
-  }catch(error){
+    return res.status(200).json({ success: true, data: detected });
+  } catch (error) {
     // get error message
     let errorMessage = error.message;
     // delete files
     await SilentDelete(path.join(Directories.imagesPath, imageName));
     // more than one face detected
-    if(/multiple faces/i.test(errorMessage)){
+    if (/multiple faces/i.test(errorMessage)) {
       errorMessage = `Photo must have a maximum of ${maxFaces} face(s).`
     }
     // no face detected error
-    if(/must consist of one/i.test(errorMessage)){
+    if (/must consist of one/i.test(errorMessage)) {
       errorMessage = 'No face detected on image.'
     }
     // return status

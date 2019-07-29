@@ -15,9 +15,6 @@ router.post('/', async (req, res) => {
   // get images from the request body
   const {image1, image2} = req.body;
 
-  // face date containers
-  let image1Detection, image2Detection;
-
   // create image names
   const image1Name = uuid() + '.jpg';
   const image2Name = uuid() + '.jpg';
@@ -35,17 +32,17 @@ router.post('/', async (req, res) => {
     await SaveImage(path.join(Directories.imagesPath, image2Name), image2Buffer);
 
     // detect image one
-    image1Detection = await FaceId.detect(process.env.APP_URL + '/images/' + image1Name);
+    const image1Detection = await FaceId.detect(process.env.APP_URL + '/images/' + image1Name, 1);
     // throw error if face one was not detected
-    if(!image1Detection) throw new Error('Failed to detect face on image one.');
+    if(!image1Detection[0]) throw new Error('Failed to detect face on image one.');
 
     // detect image two
-    image2Detection = await FaceId.detect(process.env.APP_URL + '/images/' + image2Name);
+    const image2Detection = await FaceId.detect(process.env.APP_URL + '/images/' + image2Name, 1);
     // throw error if face two was not detected
-    if(!image2Detection) throw new Error('Failed to detect face on image two.');
+    if(!image2Detection[0]) throw new Error('Failed to detect face on image two.');
 
     // verify faces
-    const verification = await FaceId.verify(image1Detection.faceId, image2Detection.faceId);
+    const verification = await FaceId.verify(image1Detection[0].faceId, image2Detection[0].faceId);
     if(!verification) throw new Error('Unable to verify faces at the moment.');
     if(verification.error) throw verification.error;
 
